@@ -845,14 +845,16 @@ $$('.pill-row').forEach(function(row){
    Chanhassen, Victoria, Waconia, Shakopee, Eden Prairie, Carver, Cologne,
    Norwood Young America, Watertown, Glencoe, Medina, Wayzata, Excelsior,
    Minnetonka, Hopkins, Edina, Eagan, and Delano.
-   Each listed city is pre-classified by its drive time from Chaska:
-   core = within 25 minutes, extended = beyond 25 minutes. A city not on
-   the list defaults to the extended tier.
-   INTERNAL ONLY: the tier travels in the submission payload. No amount is
-   ever attached — wallpaper project minimums have not been set yet, so no
-   minimum field exists anywhere in this page, visible or hidden. The
-   visitor-facing note confirms only that a minimum applies and which
-   tier their city is in — never a number. */
+   The calculator ALWAYS protects the project minimum, by area:
+   within a 25-minute drive of Chaska -> $650 minimum;
+   beyond 25 minutes of Chaska        -> $850 minimum.
+   Each listed city is pre-classified by its drive time from Chaska.
+   A city not on the list defaults to the $850 tier, so the minimum is
+   protected even before Hillcrest confirms coverage.
+   The minimum AMOUNTS are internal only — per Carlos's rule this
+   calculator never shows prices on screen; the tier and minimum travel
+   in the submission payload and the internal inbox summary only. */
+var AREA_MINIMUMS={core:650,extended:850};
 var SERVICE_AREAS=[
  ['Chaska','core'],['Chanhassen','core'],['Victoria','core'],['Carver','core'],
  ['Waconia','core'],['Cologne','core'],['Excelsior','core'],['Shakopee','core'],
@@ -860,14 +862,19 @@ var SERVICE_AREAS=[
  ['Norwood Young America','extended'],['Edina','extended'],['Medina','extended'],['Watertown','extended'],
  ['Delano','extended'],['Eagan','extended'],['Glencoe','extended']
 ];
+function money(n){return '$'+n.toLocaleString('en-US')}
 function areaFor(city){
   var tier=null;
   for(var i=0;i<SERVICE_AREAS.length;i++){if(SERVICE_AREAS[i][0]===city){tier=SERVICE_AREAS[i][1];break}}
   var listed=!!tier; if(!tier)tier='extended';
   var core=tier==='core';
   return {city:city||'Not specified',listed:listed,tier:tier,
-    tierLabel:core?'Within 25 minutes of Chaska':'Beyond 25 minutes of Chaska'};
+    tierLabel:core?'Within 25 minutes of Chaska':'Beyond 25 minutes of Chaska',
+    min:AREA_MINIMUMS[tier]};
 }
+/* Visitor-facing area note: confirms the tier only. The minimum AMOUNT is
+   never shown on screen — it is stamped into the submission payload and
+   the internal inbox summary only (see the quote submit handler). */
 function updateAreaUI(){
   var note=$('#areaNote'); if(!note)return;
   var v=$('#fCity').value;
@@ -1002,11 +1009,25 @@ $('#quoteForm').addEventListener('submit',function(e){
   lines.push('Preferred contact: '+$('#fContact').value+' · Best time: '+$('#fBestTime').value);
   lines.push('Heard about us: '+$('#fSource').value);
   lines.push('Requested completion: '+$('#fTimeline').value);
-  lines.push('');
-  lines.push('SERVICE AREA');
-  lines.push('Area: '+area.city+' — '+area.tierLabel+(area.listed?'':' (not on the standard service-area list — confirm coverage)'));
-  lines.push('A project minimum applies to this area and is applied when the quote is prepared.');
-  lines.push('');
+  /* INTERNAL ONLY: the protected-minimum block goes into the summary that
+     is sent to Hillcrest's inbox (payload + email fallback). It is never
+     part of the summary displayed to the visitor on screen — the visitor's
+     copy keeps the generic SERVICE AREA block, with the tier only and
+     never a number. The marker line below is expanded into the right
+     block for each version when the summaries are built. */
+  var minBlock=[];
+  minBlock.push('');
+  minBlock.push('SERVICE AREA & PROTECTED MINIMUM');
+  minBlock.push('Area: '+area.city+' — '+area.tierLabel+(area.listed?'':' (not on the standard service-area list — confirm coverage)'));
+  minBlock.push('Protected project minimum for this area: '+money(area.min)+' — quote is never prepared below this minimum.');
+  minBlock.push('');
+  var areaBlock=[];
+  areaBlock.push('');
+  areaBlock.push('SERVICE AREA');
+  areaBlock.push('Area: '+area.city+' — '+area.tierLabel+(area.listed?'':' (not on the standard service-area list — confirm coverage)'));
+  areaBlock.push('A project minimum applies to this area and is applied when the quote is prepared.');
+  areaBlock.push('');
+  lines.push('\u0001AREA-BLOCK\u0001');
   var bt=builderTotals(); var breakdown=roomsBreakdown(); var photoFiles=selectedPhotoFiles(); var photoNames=photoFiles.map(function(f){return f.name});
   lines.push('SPACES — '+singles.coverage);
   lines.push('Total wall area (calculated from wall height \u00d7 length): '+fmtNum(bt.total)+' sq ft');
@@ -1035,7 +1056,15 @@ $('#quoteForm').addEventListener('submit',function(e){
   lines.push('PHOTOS');
   if(photoNames.length){lines.push('Photos attached: '+photoNames.length+' — '+photoNames.join(', '))}else{lines.push('Photos attached: none')}
   if($('#fNotes').value.trim()){lines.push('');lines.push('NOTES');lines.push($('#fNotes').value.trim())}
-  var summary=lines.join('\n');
+  var internalLines=[], displayLines=[];
+  lines.forEach(function(l){
+    if(l==='\u0001AREA-BLOCK\u0001'){
+      minBlock.forEach(function(x){internalLines.push(x)});
+      areaBlock.forEach(function(x){displayLines.push(x)});
+    }else{internalLines.push(l);displayLines.push(l)}
+  });
+  var summary=internalLines.join('\n');
+  var displaySummary=displayLines.join('\n');
   var counts={rooms:bt.rooms,walls:bt.walls}; COUNTERS.forEach(function(c){counts[c.id]=c.val});
   var payload={
     type:'quote_request',
@@ -1049,6 +1078,7 @@ $('#quoteForm').addEventListener('submit',function(e){
     heard_about_us:$('#fSource').value, requested_completion:$('#fTimeline').value,
     service_area_city:area.city, service_area_listed:area.listed,
     area_tier:area.tier, area_tier_label:area.tierLabel,
+    project_minimum:area.min, project_minimum_formatted:money(area.min),
     coverage:singles.coverage, counts:counts,
     ceiling_height:$('#ceilHeight').value,
     total_wall_sqft:bt.total, approx_wall_sqft:bt.total, total_sqft:bt.total,
@@ -1063,7 +1093,7 @@ $('#quoteForm').addEventListener('submit',function(e){
     summary:summary
   };
   $('#successTitle').textContent='Thank you, '+$('#fFirst').value.trim()+' — your request is built.';
-  $('#successSummary').textContent=summary;
+  $('#successSummary').textContent=displaySummary;
   var mail='mailto:?subject='+encodeURIComponent('Wallpaper Installation Quote Request — '+name)+'&body='+encodeURIComponent(summary);
   $('#mailtoBtn').setAttribute('href',mail);
   $('#mailtoBtn').style.display='';
