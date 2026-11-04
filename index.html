@@ -205,6 +205,36 @@ section{padding:72px 0;scroll-margin-top:84px} section.tight{padding:48px 0}
 .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--gold);outline-offset:0;border-color:transparent}
 .field .err{display:none;color:#b35454;font-size:.8rem}.field.invalid input,.field.invalid select{border-color:#b35454}.field.invalid .err{display:block}
 .calc-nav{display:flex;justify-content:space-between;gap:12px;margin-top:26px;flex-wrap:wrap}
+/* room & wall builder */
+.room-card{border:1px solid var(--line2);background:#fff;border-radius:16px;padding:16px;margin-bottom:14px}
+.room-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.room-head input.room-name{flex:1;min-width:140px;background:#fff;border:1px solid var(--line2);color:var(--navy);border-radius:10px;padding:10px 12px;font:inherit;font-weight:700;font-size:.95rem}
+.room-head input.room-name:focus{outline:2px solid var(--gold);border-color:transparent}
+.room-total{font-size:.82rem;font-weight:800;color:var(--gold-dark);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:6px 11px;white-space:nowrap}
+.btn-small{border:1px solid var(--line2);background:#fff;color:var(--muted);padding:8px 13px;border-radius:999px;cursor:pointer;font-weight:700;font-size:.83rem;font-family:inherit}
+.btn-small:hover{border-color:var(--gold-dark);color:var(--gold-dark)}
+.btn-dashed{width:100%;border:1.5px dashed rgba(27,35,64,.28);background:var(--panel2);color:var(--navy);padding:11px;border-radius:12px;cursor:pointer;font-weight:700;font-size:.88rem;font-family:inherit;margin-top:10px}
+.btn-dashed:hover{border-color:var(--gold-dark);color:var(--gold-dark)}
+.wall-row{display:grid;grid-template-columns:58px 1fr 1fr 92px 36px;gap:9px;align-items:end;padding:10px 0;border-top:1px solid var(--line2)}
+.wall-row:first-child{border-top:0}
+@media(max-width:620px){.wall-row{grid-template-columns:1fr 1fr;align-items:start}.wall-row .wall-label{grid-column:1/-1}.wall-row .wall-area{grid-column:1/-1}}
+.wall-label{font-size:.82rem;font-weight:800;color:var(--muted);padding-bottom:11px}
+.wall-row label{font-size:.76rem;font-weight:700;color:#454b63;display:flex;flex-direction:column;gap:5px}
+.wall-row input{background:#fff;border:1px solid var(--line2);color:var(--navy);border-radius:10px;padding:10px 11px;font:inherit;font-size:.95rem;width:100%}
+.wall-row input:focus{outline:2px solid var(--gold);border-color:transparent}
+.wall-area{font-size:.85rem;font-weight:800;color:var(--navy);padding-bottom:11px;text-align:right;white-space:nowrap}
+.wall-remove{width:36px;height:40px;border-radius:10px;border:1px solid var(--line2);background:#fff;color:var(--muted);font-size:1.05rem;cursor:pointer;line-height:1}
+.wall-remove:hover{color:#b35454;border-color:#b35454}
+.builder-bar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--navy);color:#fff;border-radius:14px;padding:14px 16px;margin-top:4px}
+.builder-bar b{font-family:'Cormorant Garamond',serif;font-size:1.35rem}
+.builder-bar span{font-size:.84rem;color:var(--on-navy)}
+.photo-input{background:#fff;border:1.5px dashed rgba(27,35,64,.3);border-radius:12px;padding:14px}
+.photo-input input[type=file]{width:100%;font:inherit;font-size:.9rem;color:var(--muted)}
+.photo-list{margin:8px 0 0;padding:0;list-style:none;font-size:.84rem;color:var(--muted)}
+.photo-list li{padding:5px 0;border-top:1px solid var(--line2);display:flex;justify-content:space-between;gap:10px}
+#sumBreakdown{margin:2px 0 0;padding:0;list-style:none}
+#sumBreakdown li{font-size:.84rem;color:var(--on-navy);padding:6px 0;border-top:1px dashed rgba(255,255,255,.14);display:flex;justify-content:space-between;gap:10px}
+#sumBreakdown li b{color:#fff;white-space:nowrap}
 /* summary */
 .summary{position:sticky;top:92px;background:var(--navy);border:1px solid var(--navy);border-radius:22px;padding:22px;color:#e8eaf2}
 .summary .small-label{color:var(--gold)}
@@ -426,21 +456,26 @@ footer a{color:var(--gold);text-decoration:none}
         <!-- STEP 1 -->
         <div class="calc-step active" data-step="1">
           <h3>Your spaces</h3>
-          <p class="hint">Rough numbers are fine — we verify every measurement in person before final pricing.</p>
-          <div class="counter-grid" id="counters"></div>
-          <div class="group-title">Coverage</div>
+          <p class="hint">Measure each wall you want papered — enter its height and length in feet and we’ll work out the square footage for you. Add as many walls and rooms as you need. Rough numbers are fine — we verify every measurement in person before final pricing.</p>
+          <div class="group-title" style="margin-top:4px">Coverage</div>
           <div class="pill-row" data-single="coverage">
             <button type="button" class="pill" data-val="Accent wall only">Accent wall only</button>
             <button type="button" class="pill on" data-val="Full rooms">Full rooms</button>
             <button type="button" class="pill" data-val="Mix of accent walls and full rooms">Mix of both</button>
           </div>
-          <div class="group-title">Your walls</div>
+          <div class="group-title">Your rooms &amp; walls</div>
+          <p style="color:var(--muted);font-size:.9rem;margin:0 0 14px">Name each room, then add a line for every wall in it. Height is usually your ceiling height; length is the wall measured side to side. Your total square footage updates as you type.</p>
+          <div id="roomsBuilder"></div>
+          <button type="button" class="btn btn-outline" id="addRoomBtn" style="width:100%">+ Add Another Room</button>
+          <div class="builder-bar" style="margin-top:14px"><div><span>Total wall area</span><br><b id="builderTotal">0 sq ft</b></div><span id="builderCounts">1 room · 1 wall</span></div>
+          <div class="group-title">Openings &amp; details</div>
+          <div class="counter-grid" id="counters"></div>
+          <div class="group-title">Ceiling height</div>
           <div class="field-grid">
-            <div class="field"><label for="ceilHeight">Ceiling height</label>
+            <div class="field"><label for="ceilHeight">Typical ceiling height — used as the starting height for new walls</label>
               <select id="ceilHeight">
                 <option>8 ft</option><option selected>9 ft</option><option>10 ft</option><option>11–12 ft</option><option>Vaulted / two-story</option><option>Not sure</option>
               </select></div>
-            <div class="field"><label for="sqft">Approximate wall square footage</label><input id="sqft" type="number" min="0" inputmode="numeric" placeholder="e.g. 320 — leave blank if unsure"></div>
           </div>
           <div class="calc-nav"><span></span><button type="button" class="btn btn-gold" data-next>Continue to Options →</button></div>
         </div>
@@ -523,6 +558,7 @@ footer a{color:var(--gold);text-decoration:none}
                   <option value="">Select one…</option>
                   <option>Google search</option><option>Facebook</option><option>Instagram</option><option>Referral from a friend or neighbor</option><option>Repeat Hillcrest customer</option><option>Saw a Hillcrest job in my neighborhood</option><option>Other</option>
                 </select><span class="err">Please tell us how you heard about us.</span></div>
+              <div class="field full"><label for="fPhotos">Photos of your rooms &amp; walls — optional</label><div class="photo-input"><input id="fPhotos" type="file" accept="image/*" multiple><p style="margin:8px 0 0;font-size:.82rem;color:var(--muted2)">Add photos of the rooms and walls you want wallpapered — wide shots and close-ups of wall condition both help us prepare your quote. You can select more than one.</p><ul class="photo-list" id="photoList"></ul></div></div>
               <div class="field full"><label for="fNotes">Anything else we should know?</label><textarea id="fNotes" rows="3" placeholder="Room notes, wall condition, deadline events, links to the paper you love…"></textarea></div>
             </div>
             <div class="calc-nav"><button type="button" class="btn btn-outline" data-prev>← Back</button><button type="submit" class="btn btn-gold" style="font-size:1rem;padding:16px 26px">Email My Quote →</button></div>
@@ -549,7 +585,9 @@ footer a{color:var(--gold);text-decoration:none}
       <div class="small-label">Your Quote Builder</div>
       <h3>Your selections</h3>
       <div class="sum-row"><span>Rooms</span><b id="sumRooms">1</b></div>
-      <div class="sum-row"><span>Walls to paper</span><b id="sumWalls">4</b></div>
+      <div class="sum-row"><span>Walls to paper</span><b id="sumWalls">1</b></div>
+      <div class="sum-row"><span>Total wall area</span><b id="sumSqft">0 sq ft</b></div>
+      <ul id="sumBreakdown"></ul>
       <div class="sum-row"><span>Options selected</span><b id="sumOptions">0</b></div>
       <div class="sum-row"><span>Coverage</span><b id="sumCoverage" style="text-align:right;font-size:.85rem">Full rooms</b></div>
       <div class="sum-row"><span>Your paper</span><b id="sumPaper" style="text-align:right;font-size:.85rem">Ordered — on its way</b></div>
@@ -656,8 +694,6 @@ showStyle(0);
 
 /* ---------- Calculator data ---------- */
 var COUNTERS=[
- {id:'rooms',label:'Rooms',sub:'Rooms getting wallpaper',val:1},
- {id:'walls',label:'Walls to paper',sub:'Across all rooms',val:4},
  {id:'openings',label:'Windows & doors',sub:'Openings we paper around',val:3},
  {id:'fixtures',label:'Wall fixtures',sub:'Sconces, mirrors, mounted items',val:0},
  {id:'outlets',label:'Outlets & switches',sub:'Plates we cut around',val:6}
@@ -697,6 +733,80 @@ document.addEventListener('click',function(e){
   var inc=e.target.getAttribute&&e.target.getAttribute('data-inc'); var dec=e.target.getAttribute&&e.target.getAttribute('data-dec');
   if(inc)bump(inc,1); if(dec)bump(dec,-1);
 });
+
+/* ---------- Rooms & walls builder ---------- */
+function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+var roomSeq=0, wallSeq=0;
+function defaultWallHeight(){var el=$('#ceilHeight'); var m=el?String(el.value).match(/\d+/):null; return m?m[0]:'9'}
+function newWall(h,l){return {uid:++wallSeq,height:(h!=null?String(h):defaultWallHeight()),length:(l!=null?String(l):'')}}
+function newRoom(name){roomSeq++; return {uid:roomSeq,name:name||('Room '+roomSeq),walls:[newWall()]}}
+var ROOMS=[]; ROOMS.push(newRoom('Room 1'));
+function wallArea(w){var h=parseFloat(w.height),l=parseFloat(w.length); if(isNaN(h)||isNaN(l)||h<0||l<0)return 0; return Math.round(h*l*100)/100}
+function roomTotal(r){var s=0; r.walls.forEach(function(w){s+=wallArea(w)}); return Math.round(s*100)/100}
+function fmtNum(n){return (Math.round(n*100)/100).toLocaleString('en-US')}
+function builderTotals(){var walls=0,total=0; ROOMS.forEach(function(r){walls+=r.walls.length; total+=roomTotal(r)}); return {rooms:ROOMS.length,walls:walls,total:Math.round(total*100)/100}}
+function roomsBreakdown(){return ROOMS.map(function(r){return {name:r.name,total_sqft:roomTotal(r),walls:r.walls.map(function(w){return {height:w.height,length:w.length,sqft:wallArea(w)}})}})}
+function renderRooms(){
+  var wrap=$('#roomsBuilder'); if(!wrap)return;
+  wrap.innerHTML=ROOMS.map(function(r,ri){
+    var walls=r.walls.map(function(w,wi){
+      return '<div class="wall-row" data-room="'+ri+'" data-wall="'+wi+'">'
+        +'<span class="wall-label">Wall '+(wi+1)+'</span>'
+        +'<label>Height (ft)<input type="number" min="0" step="0.1" inputmode="decimal" data-field="height" value="'+escapeHtml(w.height)+'" placeholder="e.g. 9" aria-label="Room '+(ri+1)+' wall '+(wi+1)+' height in feet"></label>'
+        +'<label>Length (ft)<input type="number" min="0" step="0.1" inputmode="decimal" data-field="length" value="'+escapeHtml(w.length)+'" placeholder="e.g. 12" aria-label="Room '+(ri+1)+' wall '+(wi+1)+' length in feet"></label>'
+        +'<span class="wall-area" data-area>'+fmtNum(wallArea(w))+' sq ft</span>'
+        +'<button type="button" class="wall-remove" data-remove-wall aria-label="Remove wall '+(wi+1)+' from '+(escapeHtml(r.name)||('Room '+(ri+1)))+'">&times;</button>'
+        +'</div>';
+    }).join('');
+    return '<div class="room-card" data-room-card="'+ri+'">'
+      +'<div class="room-head"><input class="room-name" type="text" value="'+escapeHtml(r.name)+'" placeholder="Room name \u2014 e.g. Living Room" aria-label="Room '+(ri+1)+' name" data-room-name="'+ri+'"><span class="room-total" data-room-total>'+fmtNum(roomTotal(r))+' sq ft</span>'
+      +(ROOMS.length>1?'<button type="button" class="btn-small" data-remove-room>Remove room</button>':'')
+      +'</div><div>'+walls+'</div>'
+      +'<button type="button" class="btn-dashed" data-add-wall>+ Add Another Wall in This Room</button>'
+      +'</div>';
+  }).join('');
+}
+function refreshBuilderTotals(){
+  ROOMS.forEach(function(r,ri){
+    r.walls.forEach(function(w,wi){
+      var row=$('#roomsBuilder .wall-row[data-room="'+ri+'"][data-wall="'+wi+'"] [data-area]');
+      if(row)row.textContent=fmtNum(wallArea(w))+' sq ft';
+    });
+    var rt=$('#roomsBuilder [data-room-card="'+ri+'"] [data-room-total]');
+    if(rt)rt.textContent=fmtNum(roomTotal(r))+' sq ft';
+  });
+}
+var rb=$('#roomsBuilder');
+if(rb){
+  rb.addEventListener('input',function(e){
+    var el=e.target;
+    if(el.hasAttribute('data-room-name')){var ri=+el.getAttribute('data-room-name'); if(ROOMS[ri])ROOMS[ri].name=el.value; updateSummary(); return}
+    var row=el.closest?el.closest('.wall-row'):null;
+    if(row&&el.getAttribute('data-field')){
+      var r2=ROOMS[+row.getAttribute('data-room')]; if(!r2)return;
+      var w2=r2.walls[+row.getAttribute('data-wall')]; if(!w2)return;
+      w2[el.getAttribute('data-field')]=el.value;
+      refreshBuilderTotals(); updateSummary();
+    }
+  });
+  rb.addEventListener('click',function(e){
+    var el=e.target;
+    if(el.hasAttribute('data-add-wall')){var card=el.closest('[data-room-card]'); var r3=ROOMS[+card.getAttribute('data-room-card')]; if(r3){r3.walls.push(newWall()); renderRooms(); refreshBuilderTotals(); updateSummary()} return}
+    if(el.hasAttribute('data-remove-wall')){var row2=el.closest('.wall-row'); var r4=ROOMS[+row2.getAttribute('data-room')]; if(r4){if(r4.walls.length<=1){r4.walls=[newWall('','')]}else{r4.walls.splice(+row2.getAttribute('data-wall'),1)} renderRooms(); refreshBuilderTotals(); updateSummary()} return}
+    if(el.hasAttribute('data-remove-room')){var card2=el.closest('[data-room-card]'); ROOMS.splice(+card2.getAttribute('data-room-card'),1); if(!ROOMS.length)ROOMS.push(newRoom('Room 1')); renderRooms(); refreshBuilderTotals(); updateSummary(); return}
+  });
+}
+var addRoomBtn=$('#addRoomBtn');
+if(addRoomBtn)addRoomBtn.addEventListener('click',function(){ROOMS.push(newRoom()); renderRooms(); refreshBuilderTotals(); updateSummary(); var names=$$('#roomsBuilder .room-name'); if(names.length)names[names.length-1].focus()});
+
+/* ---------- Photo uploads (quote form) ---------- */
+function selectedPhotoFiles(){var inp=$('#fPhotos'); if(!inp||!inp.files)return []; return Array.prototype.slice.call(inp.files)}
+function renderPhotoList(){
+  var ul=$('#photoList'); if(!ul)return;
+  var files=selectedPhotoFiles();
+  if(!files.length){ul.innerHTML=''; return}
+  ul.innerHTML=files.map(function(f){return '<li><span>'+escapeHtml(f.name)+'</span><span>'+(f.size?Math.max(1,Math.round(f.size/1024))+' KB':'')+'</span></li>'}).join('');
+}
 
 /* toggles */
 var selected={};
@@ -778,17 +888,23 @@ updateAreaUI();
 /* summary */
 function selectedList(){return Object.keys(selected).map(function(k){return selected[k]})}
 function updateSummary(){
-  $('#sumRooms').textContent=counterVal('rooms');
-  $('#sumWalls').textContent=counterVal('walls');
+  var bt=builderTotals();
+  $('#sumRooms').textContent=bt.rooms;
+  $('#sumWalls').textContent=bt.walls;
+  var sfEl=$('#sumSqft'); if(sfEl)sfEl.textContent=fmtNum(bt.total)+' sq ft';
+  var btEl=$('#builderTotal'); if(btEl)btEl.textContent=fmtNum(bt.total)+' sq ft';
+  var bcEl=$('#builderCounts'); if(bcEl)bcEl.textContent=bt.rooms+(bt.rooms===1?' room':' rooms')+' · '+bt.walls+(bt.walls===1?' wall':' walls');
+  var bdEl=$('#sumBreakdown'); if(bdEl)bdEl.innerHTML=ROOMS.map(function(r){return '<li><span>'+escapeHtml(r.name||'Room')+'</span><b>'+fmtNum(roomTotal(r))+' sq ft</b></li>'}).join('');
   var list=selectedList(); $('#sumOptions').textContent=list.length;
   $('#sumCoverage').textContent=singles.coverage; $('#sumPaper').textContent=singles.paperStatus;
   var ul=$('#sumList');
   if(!list.length){ul.innerHTML='<li style="border:0;color:var(--on-navy-dim)">Your options will appear here as you tap them.</li>';return}
   ul.innerHTML=list.map(function(x){return '<li>'+x+'</li>'}).join('');
 }
+renderRooms();
 updateSummary();
 $('#ceilHeight').addEventListener('change',updateSummary);
-$('#sqft').addEventListener('input',updateSummary);
+var fPhotosEl=$('#fPhotos'); if(fPhotosEl)fPhotosEl.addEventListener('change',renderPhotoList);
 
 /* steps */
 var step=1;
@@ -833,8 +949,21 @@ function copyText(txt){
    Until the URL is pasted in, both forms fall back to the visitor's own
    email app (the flow this page has always had) — nothing breaks. */
 var ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/22197849/49wlub3/';
-function sendToHillcrest(payload){
+function sendToHillcrest(payload, files){
   if(!ZAPIER_WEBHOOK_URL) return Promise.resolve(false);
+  if(files&&files.length){
+    var fd=new FormData();
+    Object.keys(payload).forEach(function(k){var v=payload[k]; fd.append(k,(v!==null&&typeof v==='object')?JSON.stringify(v):String(v==null?'':v))});
+    files.forEach(function(f,i){fd.append('photos',f,f.name); fd.append('photo_'+(i+1),f,f.name)});
+    fd.append('photo_count',String(files.length));
+    return fetch(ZAPIER_WEBHOOK_URL,{method:'POST',body:fd})
+      .then(function(r){return !!r.ok})
+      .catch(function(){
+        return fetch(ZAPIER_WEBHOOK_URL,{method:'POST',mode:'no-cors',body:fd})
+          .then(function(){return true})
+          .catch(function(){return false});
+      });
+  }
   var body=JSON.stringify(payload);
   return fetch(ZAPIER_WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:body})
     .then(function(r){return !!r.ok})
@@ -878,10 +1007,20 @@ $('#quoteForm').addEventListener('submit',function(e){
   lines.push('Area: '+area.city+' — '+area.tierLabel+(area.listed?'':' (not on the standard service-area list — confirm coverage)'));
   lines.push('A project minimum applies to this area and is applied when the quote is prepared.');
   lines.push('');
+  var bt=builderTotals(); var breakdown=roomsBreakdown(); var photoFiles=selectedPhotoFiles(); var photoNames=photoFiles.map(function(f){return f.name});
   lines.push('SPACES — '+singles.coverage);
+  lines.push('Total wall area (calculated from wall height \u00d7 length): '+fmtNum(bt.total)+' sq ft');
+  lines.push('Rooms: '+bt.rooms+' · Walls: '+bt.walls);
+  lines.push('');
+  lines.push('ROOMS & WALLS BREAKDOWN');
+  breakdown.forEach(function(r,ri){
+    lines.push((r.name||('Room '+(ri+1)))+' — '+fmtNum(r.total_sqft)+' sq ft ('+r.walls.length+(r.walls.length===1?' wall':' walls')+')');
+    r.walls.forEach(function(w,wi){lines.push('  • Wall '+(wi+1)+': '+(w.height||'—')+' ft high \u00d7 '+(w.length||'—')+' ft long = '+fmtNum(w.sqft)+' sq ft')});
+  });
+  lines.push('');
+  lines.push('OPENINGS & DETAILS');
   COUNTERS.forEach(function(c){lines.push('• '+c.label+': '+c.val)});
   lines.push('Ceiling height: '+$('#ceilHeight').value);
-  if($('#sqft').value)lines.push('Approximate wall square footage: '+$('#sqft').value);
   lines.push('');
   lines.push('PROJECT DETAILS');
   lines.push('Project type: '+singles.projectType);
@@ -892,9 +1031,12 @@ $('#quoteForm').addEventListener('submit',function(e){
   lines.push('');
   lines.push('OPTIONS ('+selectedList().length+')');
   if(selectedList().length)selectedList().forEach(function(x){lines.push('• '+x)});else lines.push('• None selected — standard installation with included prep & priming');
+  lines.push('');
+  lines.push('PHOTOS');
+  if(photoNames.length){lines.push('Photos attached: '+photoNames.length+' — '+photoNames.join(', '))}else{lines.push('Photos attached: none')}
   if($('#fNotes').value.trim()){lines.push('');lines.push('NOTES');lines.push($('#fNotes').value.trim())}
   var summary=lines.join('\n');
-  var counts={}; COUNTERS.forEach(function(c){counts[c.id]=c.val});
+  var counts={rooms:bt.rooms,walls:bt.walls}; COUNTERS.forEach(function(c){counts[c.id]=c.val});
   var payload={
     type:'quote_request',
     subject:'Wallpaper Installation Quote Request — '+name,
@@ -908,7 +1050,12 @@ $('#quoteForm').addEventListener('submit',function(e){
     service_area_city:area.city, service_area_listed:area.listed,
     area_tier:area.tier, area_tier_label:area.tierLabel,
     coverage:singles.coverage, counts:counts,
-    ceiling_height:$('#ceilHeight').value, approx_wall_sqft:$('#sqft').value,
+    ceiling_height:$('#ceilHeight').value,
+    total_wall_sqft:bt.total, approx_wall_sqft:bt.total, total_sqft:bt.total,
+    total_rooms:bt.rooms, total_walls:bt.walls,
+    rooms_breakdown:breakdown,
+    rooms_breakdown_text:breakdown.map(function(r,ri){return (r.name||('Room '+(ri+1)))+': '+r.walls.map(function(w,wi){return 'Wall '+(wi+1)+' '+(w.height||'—')+'ft x '+(w.length||'—')+'ft = '+w.sqft+' sq ft'}).join('; ')+' | Room total '+r.total_sqft+' sq ft'}).join('\n'),
+    photo_count:photoNames.length, photo_names:photoNames, photo_file_names:photoNames.join(', '), has_photos:photoNames.length>0,
     project_type:singles.projectType, paper_status:singles.paperStatus,
     pattern_repeat:singles.patternRepeat, space_feel:singles.spaceFeel,
     paper_chosen:$('#paperChoice').value.trim(),
@@ -922,7 +1069,7 @@ $('#quoteForm').addEventListener('submit',function(e){
   $('#mailtoBtn').style.display='';
   $('#calcCard').style.display='none';
   var sb=$('#successBox'); sb.classList.add('show'); sb.scrollIntoView({behavior:'smooth',block:'center'});
-  sendToHillcrest(payload).then(function(sent){
+  sendToHillcrest(payload, photoFiles).then(function(sent){
     if(sent){
       $('#successTitle').textContent='Thank you, '+$('#fFirst').value.trim()+' — your request is on its way.';
       $('#successText').textContent="Your request was sent straight to the Hillcrest team the moment you hit submit. We'll prepare your itemized quote from these selections and email it back to you.";
